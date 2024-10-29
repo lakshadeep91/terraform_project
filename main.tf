@@ -8,13 +8,13 @@ variable "server_port" {
     default = 8080
 }
 
-data "template_file" "user_data_demo" {
-    template = <<EOF
-        #!/bin/bash
-        echo "Hello, World!" > index.html
-        nohup busybox httpd -f -p ${var.server_port} &
-        EOF
-}
+# data "template_file" "user_data_demo" {
+#     template = <<EOF
+#         #!/bin/bash
+#         echo "Hello, World!" > index.html
+#         nohup busybox httpd -f -p ${var.server_port} &
+#         EOF
+# }
 
 resource "aws_launch_template" "demo" {
     name = "demo_lt"
@@ -23,11 +23,10 @@ resource "aws_launch_template" "demo" {
     instance_type = "t2.micro"
     vpc_security_group_ids = [aws_security_group.instance.id]
 
-    user_data = base64encode(data.template_file.user_data_demo.rendered)
+    # user_data = base64encode(data.template_file.user_data_demo.rendered)
 
     block_device_mappings {
-    device_name = "/dev/xvda"
-
+        device_name = "/dev/sdf"
         ebs {
             volume_size = "100"
             volume_type = "standard"
@@ -46,10 +45,12 @@ resource "aws_autoscaling_group" "example" {
         version = "$Latest"
     }
     vpc_zone_identifier = data.aws_subnets.default.ids
+    # availability_zones = ["us-east-2a"]
 
     target_group_arns = [aws_lb_target_group.asg.arn]
-    health_check_type = "ELB"
+    # health_check_type = "ELB"
 
+    desired_capacity   = 2
     min_size = 2
     max_size = 10
 
